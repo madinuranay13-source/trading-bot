@@ -5,17 +5,20 @@ class Portfolio:
         self.history = []
 
     def buy(self, symbol, price, qty=1):
+        price = float(price)  # 🔥 FORCE CLEAN NUMBER
         cost = price * qty
 
-        if self.cash >= cost:
-            self.cash -= cost
+        if float(self.cash) >= cost:
+            self.cash = float(self.cash) - cost
             self.positions[symbol] = self.positions.get(symbol, 0) + qty
             self.history.append(("BUY", symbol, price, qty))
 
     def sell(self, symbol, price, qty=1):
+        price = float(price)
+
         if self.positions.get(symbol, 0) >= qty:
             self.positions[symbol] -= qty
-            self.cash += price * qty
+            self.cash = float(self.cash) + price * qty
             self.history.append(("SELL", symbol, price, qty))
 
     def value(self, prices):
