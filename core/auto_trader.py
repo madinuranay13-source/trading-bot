@@ -1,4 +1,3 @@
-```python
 from core.data import get_data
 from core.strategy import generate_signal
 
@@ -42,7 +41,6 @@ class AutoTrader:
             price = stock["price"]
             risk = stock["risk"]
 
-            # Only buy lower-risk assets
             if signal == "BUY" and risk != "HIGH":
                 self.portfolio.buy(symbol, price)
 
@@ -50,4 +48,3 @@ class AutoTrader:
                 self.portfolio.sell(symbol, price)
 
         return opportunities
-```
