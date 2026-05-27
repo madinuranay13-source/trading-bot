@@ -1,15 +1,15 @@
 class Portfolio:
     def __init__(self, cash):
-        self.cash = cash
+        self.cash = float(cash)
         self.positions = {}
         self.history = []
 
     def buy(self, symbol, price, qty=1):
-        price = float(price)  # 🔥 FORCE CLEAN NUMBER
+        price = float(price)
         cost = price * qty
 
-        if float(self.cash) >= cost:
-            self.cash = float(self.cash) - cost
+        if self.cash >= cost:
+            self.cash -= cost
             self.positions[symbol] = self.positions.get(symbol, 0) + qty
             self.history.append(("BUY", symbol, price, qty))
 
@@ -18,13 +18,14 @@ class Portfolio:
 
         if self.positions.get(symbol, 0) >= qty:
             self.positions[symbol] -= qty
-            self.cash = float(self.cash) + price * qty
+            self.cash += price * qty
             self.history.append(("SELL", symbol, price, qty))
 
     def value(self, prices):
-        total = self.cash
+        total = float(self.cash)
 
-        for s, q in self.positions.items():
-            total += prices.get(s, 0) * q
+        for symbol, qty in self.positions.items():
+            price = float(prices.get(symbol, 0))
+            total += price * qty
 
-        return total
+        return float(total)
