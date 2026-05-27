@@ -13,7 +13,7 @@ class Bot:
             return "NO DATA", 0
 
         signal = generate_signal(df)
-        price = df["Close"].iloc[-1]
+        price = float(df["Close"].iloc[-1].item())
 
         if signal == "BUY":
             self.portfolio.buy(symbol, price)
