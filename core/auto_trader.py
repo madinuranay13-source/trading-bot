@@ -41,10 +41,12 @@ class AutoTrader:
             price = stock["price"]
             risk = stock["risk"]
 
-            if signal == "BUY" and risk != "HIGH":
-                self.portfolio.buy(symbol, price)
+            if signal == "BUY":
+                qty = 3 if risk == "LOW" else 1
+
+                self.portfolio.buy(symbol, price, qty)
 
             elif signal == "SELL":
-                self.portfolio.sell(symbol, price)
+                self.portfolio.sell(symbol, price, 1)
 
         return opportunities

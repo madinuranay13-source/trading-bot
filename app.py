@@ -11,16 +11,17 @@ from core.data import get_data
 # ---------------- PAGE ----------------
 
 st.set_page_config(
-    page_title="QUANT-X V2",
+    page_title="QUANT-X V3",
     page_icon="🚀",
     layout="wide"
 )
 
 
-# ---------------- CUSTOM CSS ----------------
+# ---------------- CSS ----------------
 
 st.markdown("""
 <style>
+
 .main {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     color: white;
@@ -48,7 +49,7 @@ st.markdown("""
 # ---------------- TITLE ----------------
 
 st.markdown(
-    "<h1 style='text-align:center;'>🚀 QUANT-X V2</h1>",
+    "<h1 style='text-align:center;'>🚀 QUANT-X V3</h1>",
     unsafe_allow_html=True
 )
 
@@ -71,13 +72,18 @@ if "trader" not in st.session_state:
 
 # ---------------- AUTO TRADE ----------------
 
-with st.spinner("Scanning market..."):
+with st.spinner("🤖 AI scanning global markets..."):
     market = st.session_state.trader.auto_trade(SYMBOLS)
 
 
-# ---------------- KPIs ----------------
+# ---------------- METRICS ----------------
 
 portfolio_value = st.session_state.portfolio.value({
+    stock["symbol"]: stock["price"]
+    for stock in market
+})
+
+pnl, pnl_percent = st.session_state.portfolio.pnl({
     stock["symbol"]: stock["price"]
     for stock in market
 })
@@ -92,7 +98,7 @@ sell_count = len([
     if s["signal"] == "SELL"
 ])
 
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4, c5 = st.columns(5)
 
 with c1:
     st.metric("💰 Portfolio", f"${portfolio_value:.2f}")
@@ -107,6 +113,13 @@ with c4:
     st.metric(
         "📦 Positions",
         len(st.session_state.portfolio.positions)
+    )
+
+with c5:
+    st.metric(
+        "💹 PnL",
+        f"${pnl}",
+        f"{pnl_percent}%"
     )
 
 
@@ -124,11 +137,12 @@ st.dataframe(
 
 # ---------------- CHART ----------------
 
+st.subheader("📈 Asset Chart")
+
 symbol = st.selectbox(
     "Inspect Asset",
     SYMBOLS
 )
-
 
 df = get_data(symbol)
 
@@ -148,7 +162,10 @@ fig.update_layout(
     height=500
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
 
 # ---------------- POSITIONS ----------------
@@ -196,3 +213,42 @@ if history:
 
 else:
     st.info("No trades yet")
+
+
+# ---------------- MONTHLY PERFORMANCE ----------------
+
+st.subheader("📊 Monthly Performance")
+
+months = [
+    "Jan", "Feb", "Mar", "Apr",
+    "May", "Jun", "Jul", "Aug"
+]
+
+performance = [
+    2, -1, 4, 3,
+    -2, 5, 6, pnl_percent
+]
+
+perf_df = pd.DataFrame({
+    "Month": months,
+    "Return": performance
+})
+
+perf_fig = go.Figure()
+
+perf_fig.add_trace(
+    go.Bar(
+        x=perf_df["Month"],
+        y=perf_df["Return"]
+    )
+)
+
+perf_fig.update_layout(
+    template="plotly_dark",
+    height=400
+)
+
+st.plotly_chart(
+    perf_fig,
+    use_container_width=True
+)

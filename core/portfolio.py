@@ -35,3 +35,12 @@ class Portfolio:
             total += prices.get(symbol, 0) * qty
 
         return float(total)
+
+    def pnl(self, current_prices):
+        total_value = self.value(current_prices)
+
+        pnl = total_value - 10000
+
+        pnl_percent = (pnl / 10000) * 100
+
+        return round(pnl, 2), round(pnl_percent, 2)

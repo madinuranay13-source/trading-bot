@@ -1,4 +1,4 @@
-import numpy as np
+import random
 
 
 def generate_signal(df):
@@ -12,20 +12,22 @@ def generate_signal(df):
         close.iloc[-5]
     ) * 100
 
-    volatility = close.pct_change().std() * 100
+    volatility = abs(close.pct_change().std() * 100)
 
-    # AI confidence score
-    confidence = abs(momentum) * 2
+    confidence = min(abs(momentum) * 12, 100)
 
-    # Risk score
-    if volatility > 4:
-        risk = "HIGH"
-    elif volatility > 2:
-        risk = "MEDIUM"
-    else:
-        risk = "LOW"
+    # ---------- RANDOMIZED RISK ----------
+    risk_pool = [
+        "LOW",
+        "LOW",
+        "MEDIUM",
+        "MEDIUM",
+        "HIGH"
+    ]
 
-    # Signal logic
+    risk = random.choice(risk_pool)
+
+    # ---------- SIGNAL ----------
     if sma_5.iloc[-1] > sma_20.iloc[-1]:
         signal = "BUY"
 
@@ -33,7 +35,11 @@ def generate_signal(df):
         signal = "SELL"
 
     else:
-        signal = "HOLD"
+        signal = random.choice([
+            "BUY",
+            "SELL",
+            "HOLD"
+        ])
 
     return {
         "signal": signal,
@@ -42,4 +48,3 @@ def generate_signal(df):
         "confidence": round(confidence, 2),
         "risk": risk
     }
-    
