@@ -1,18 +1,11 @@
 def generate_signal(df):
-    if df is None or len(df) < 20:
-        return "HOLD"
+    short_ma = df["Close"].rolling(5).mean()
+    long_ma = df["Close"].rolling(20).mean()
 
-    df = df.copy()
-
-    df["SMA_short"] = df["Close"].rolling(5).mean()
-    df["SMA_long"] = df["Close"].rolling(20).mean()
-
-    short = df["SMA_short"].iloc[-1]
-    long = df["SMA_long"].iloc[-1]
-
-    if short > long:
+    if short_ma.iloc[-1] > long_ma.iloc[-1]:
         return "BUY"
-    elif short < long:
+
+    elif short_ma.iloc[-1] < long_ma.iloc[-1]:
         return "SELL"
-    else:
-        return "HOLD"
+
+    return "HOLD"
