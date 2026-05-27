@@ -1,0 +1,53 @@
+```python
+from core.data import get_data
+from core.strategy import generate_signal
+
+
+class AutoTrader:
+    def __init__(self, portfolio):
+        self.portfolio = portfolio
+
+    def scan_market(self, symbols):
+        opportunities = []
+
+        for symbol in symbols:
+            try:
+                df = get_data(symbol)
+
+                result = generate_signal(df)
+
+                price = float(df["Close"].values[-1])
+
+                opportunities.append({
+                    "symbol": symbol,
+                    "price": price,
+                    "signal": result["signal"],
+                    "momentum": result["momentum"],
+                    "volatility": result["volatility"],
+                    "confidence": result["confidence"],
+                    "risk": result["risk"]
+                })
+
+            except Exception:
+                continue
+
+        return opportunities
+
+    def auto_trade(self, symbols):
+        opportunities = self.scan_market(symbols)
+
+        for stock in opportunities:
+            symbol = stock["symbol"]
+            signal = stock["signal"]
+            price = stock["price"]
+            risk = stock["risk"]
+
+            # Only buy lower-risk assets
+            if signal == "BUY" and risk != "HIGH":
+                self.portfolio.buy(symbol, price)
+
+            elif signal == "SELL":
+                self.portfolio.sell(symbol, price)
+
+        return opportunities
+```
