@@ -1,14 +1,15 @@
+import yfinance as yf
 import pandas as pd
-import numpy as np
 
 
-def get_data(symbol):
-    dates = pd.date_range(end=pd.Timestamp.today(), periods=30)
+def get_data(symbol, period="6mo"):
 
-    prices = np.cumsum(np.random.randn(30)) + 100
+    df = yf.download(
+        symbol,
+        period=period,
+        progress=False
+    )
 
-    df = pd.DataFrame({
-        "Close": prices
-    }, index=dates)
+    df = df.dropna()
 
     return df

@@ -1,254 +1,91 @@
-import streamlit as st
-import plotly.graph_objects as go
-import pandas as pd
+import os
+import sys
+from pathlib import Path
 
-from core.state import SYMBOLS, INITIAL_CASH
+import streamlit as st
+
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+from core.state import (
+    INITIAL_CASH
+)
+
 from core.portfolio import Portfolio
 from core.auto_trader import AutoTrader
-from core.data import get_data
 
 
-# ---------------- PAGE ----------------
+# ---------------- PAGE CONFIG ----------------
 
 st.set_page_config(
-    page_title="QUANT-X V3",
+    page_title="QUANT-X V4",
     page_icon="🚀",
     layout="wide"
-)
-
-
-# ---------------- CSS ----------------
-
-st.markdown("""
-<style>
-
-.main {
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    color: white;
-}
-
-.stMetric {
-    background-color: rgba(255,255,255,0.08);
-    border-radius: 18px;
-    padding: 15px;
-}
-
-.stButton > button {
-    width: 100%;
-    border-radius: 15px;
-    background: linear-gradient(90deg, #ff00cc, #3333ff);
-    color: white;
-    font-weight: bold;
-    border: none;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
-# ---------------- TITLE ----------------
-
-st.markdown(
-    "<h1 style='text-align:center;'>🚀 QUANT-X V3</h1>",
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    "<center>Autonomous AI Trading Terminal</center>",
-    unsafe_allow_html=True
 )
 
 
 # ---------------- SESSION ----------------
 
 if "portfolio" not in st.session_state:
-    st.session_state.portfolio = Portfolio(INITIAL_CASH)
+
+    st.session_state.portfolio = Portfolio(
+        INITIAL_CASH
+    )
 
 if "trader" not in st.session_state:
+
     st.session_state.trader = AutoTrader(
         st.session_state.portfolio
     )
 
 
-# ---------------- AUTO TRADE ----------------
+# ---------------- SIDEBAR ----------------
 
-with st.spinner("🤖 AI scanning global markets..."):
-    market = st.session_state.trader.auto_trade(SYMBOLS)
+st.sidebar.title("🚀 QUANT-X")
 
-
-# ---------------- METRICS ----------------
-
-portfolio_value = st.session_state.portfolio.value({
-    stock["symbol"]: stock["price"]
-    for stock in market
-})
-
-pnl, pnl_percent = st.session_state.portfolio.pnl({
-    stock["symbol"]: stock["price"]
-    for stock in market
-})
-
-buy_count = len([
-    s for s in market
-    if s["signal"] == "BUY"
-])
-
-sell_count = len([
-    s for s in market
-    if s["signal"] == "SELL"
-])
-
-c1, c2, c3, c4, c5 = st.columns(5)
-
-with c1:
-    st.metric("💰 Portfolio", f"${portfolio_value:.2f}")
-
-with c2:
-    st.metric("📈 Buy Signals", buy_count)
-
-with c3:
-    st.metric("📉 Sell Signals", sell_count)
-
-with c4:
-    st.metric(
-        "📦 Positions",
-        len(st.session_state.portfolio.positions)
-    )
-
-with c5:
-    st.metric(
-        "💹 PnL",
-        f"${pnl}",
-        f"{pnl_percent}%"
-    )
-
-
-# ---------------- MARKET TABLE ----------------
-
-st.subheader("⚡ AI Market Scanner")
-
-market_df = pd.DataFrame(market)
-
-st.dataframe(
-    market_df,
-    use_container_width=True
+page = st.sidebar.radio(
+    "Navigation",
+    [
+        "Dashboard",
+        "Strategy Lab",
+        "Portfolio Analytics",
+        "Activity Feed"
+    ]
 )
 
 
-# ---------------- CHART ----------------
+# ---------------- DASHBOARD ----------------
 
-st.subheader("📈 Asset Chart")
+if page == "Dashboard":
 
-symbol = st.selectbox(
-    "Inspect Asset",
-    SYMBOLS
-)
+    from pages.dashboard import render
 
-df = get_data(symbol)
-
-fig = go.Figure()
-
-fig.add_trace(
-    go.Scatter(
-        x=df.index,
-        y=df["Close"],
-        mode="lines",
-        name=symbol
-    )
-)
-
-fig.update_layout(
-    template="plotly_dark",
-    height=500
-)
-
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
+    render()
 
 
-# ---------------- POSITIONS ----------------
+# ---------------- STRATEGY LAB ----------------
 
-st.subheader("📦 Portfolio Positions")
+elif page == "Strategy Lab":
 
-positions = []
+    from pages.strategy_lab import render
 
-for stock, qty in st.session_state.portfolio.positions.items():
-    if qty > 0:
-        positions.append({
-            "Stock": stock,
-            "Quantity": qty
-        })
-
-if positions:
-    st.dataframe(
-        pd.DataFrame(positions),
-        use_container_width=True
-    )
-
-else:
-    st.info("No active positions")
+    render()
 
 
-# ---------------- HISTORY ----------------
+# ---------------- PORTFOLIO ----------------
 
-st.subheader("📜 Trade History")
+elif page == "Portfolio Analytics":
 
-history = []
+    from pages.portfolio_page import render
 
-for trade in st.session_state.portfolio.history:
-    history.append({
-        "Action": trade[0],
-        "Stock": trade[1],
-        "Price": trade[2],
-        "Qty": trade[3]
-    })
-
-if history:
-    st.dataframe(
-        pd.DataFrame(history),
-        use_container_width=True
-    )
-
-else:
-    st.info("No trades yet")
+    render()
 
 
-# ---------------- MONTHLY PERFORMANCE ----------------
+# ---------------- ACTIVITY ----------------
 
-st.subheader("📊 Monthly Performance")
+elif page == "Activity Feed":
 
-months = [
-    "Jan", "Feb", "Mar", "Apr",
-    "May", "Jun", "Jul", "Aug"
-]
+    from pages.activity import render
 
-performance = [
-    2, -1, 4, 3,
-    -2, 5, 6, pnl_percent
-]
-
-perf_df = pd.DataFrame({
-    "Month": months,
-    "Return": performance
-})
-
-perf_fig = go.Figure()
-
-perf_fig.add_trace(
-    go.Bar(
-        x=perf_df["Month"],
-        y=perf_df["Return"]
-    )
-)
-
-perf_fig.update_layout(
-    template="plotly_dark",
-    height=400
-)
-
-st.plotly_chart(
-    perf_fig,
-    use_container_width=True
-)
+    render()

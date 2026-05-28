@@ -1,4 +1,4 @@
-INITIAL_CASH = 10000
+INITIAL_CASH = 100000
 
 SYMBOLS = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA",
@@ -13,4 +13,9 @@ SYMBOLS = [
     "SPY", "QQQ", "DIA", "IWM",
     "PLTR", "SNOW", "RIVN", "COIN", "SOFI",
     "BABA", "TSM", "SONY", "SAP", "ASML"
+]
+
+STRATEGIES = [
+    "Moving Average",
+    "RSI"
 ]
